@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Report: The BCI Landscape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Cool Neutrals (Slate, Blue, White) - Dark Mode -->
+    <!-- 
+      Application Structure Plan: Designed a thematic, tab-based SPA structure. A top navigation bar switches between visible sections: 'Introduction', 'BCI Technologies', 'Ecosystem', 'Enabling Concepts', and 'Future Implications'. This is more intuitive than a linear report, allowing users to explore the interconnected topics (BCI, DARPA, AI, companies) based on their interest. Interactions include clicking nav links to swap content, and clicking on items (e.g., companies, technologies) to display detailed descriptions dynamically. This structure organizes the disparate links into a coherent, explorable narrative.
+    -->
+    <!-- 
+      Visualization & Content Choices: 
+      - Section 1 (Intro): Text-based overview. Goal: Orient. Method: HTML/Tailwind.
+      - Section 2 (Technologies): Interactive comparison. Goal: Compare. Method: Chart.js Bar Chart comparing Invasive/Non-Invasive BCI on 'Resolution' vs. 'Risk' (representative data). JS-powered buttons toggle descriptive text.
+      - Section 3 (Ecosystem): Dynamic explorer. Goal: Organize. Method: Chart.js Donut chart (invented data on market focus: Medical/Consumer/Research). Clickable HTML list of companies/orgs (Neuralink, DARPA, etc.) dynamically populates a detail card via JS.
+      - Section 4 (Enabling Tech): Inform. Goal: Explain. Method: HTML/CSS grid of cards for AI, Smartdust, Terahertz. Simple CSS-based visual cues (no SVG).
+      - Section 5 (Implications): Text summary. Goal: Conclude. Method: Styled HTML text on Post-Humanism.
+      - All charts use Canvas via Chart.js. NO SVG/Mermaid used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+      .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 300px;
+        max-height: 400px;
+      }
+      @media (min-width: 768px) {
+        .chart-container {
+          height: 350px;
+        }
+      }
+      .section {
+        display: none;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      .section.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .nav-link {
+        transition: all 0.2s ease-in-out;
+      }
+      .nav-link.active-link {
+        --tw-bg-opacity: 1;
+        background-color: rgb(
+          30 64 175 / var(--tw-bg-opacity)
+        ); /* was bg-blue-100 */
+        --tw-text-opacity: 1;
+        color: rgb(
+          191 219 254 / var(--tw-text-opacity)
+        ); /* was text-blue-700 */
+      }
+      .player-item.active-player {
+        --tw-bg-opacity: 1;
+        background-color: rgb(
+          71 85 105 / var(--tw-bg-opacity)
+        ); /* was bg-slate-200 */
+      }
+      .tech-button.active-tech {
+        --tw-bg-opacity: 1;
+        background-color: rgb(
+          96 165 250 / var(--tw-bg-opacity)
+        ); /* was bg-blue-600 */
+        --tw-text-opacity: 1;
+        color: rgb(255 255 255 / var(--tw-text-opacity));
+      }
+    </style>
+  </head>
+  <body class="bg-slate-900 text-slate-200">
+    <header
+      class="bg-slate-800 shadow-lg sticky top-0 z-50 border-b border-slate-700"
+    >
+      <nav
+        class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center"
+      >
+        <h1 class="text-2xl font-bold text-blue-400">The BCI Landscape</h1>
+        <div class="flex flex-wrap space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+          <button
+            class="nav-link py-2 px-3 rounded-md hover:bg-slate-700 text-slate-300 font-medium text-sm sm:text-base"
+            data-target="intro"
+          >
+            Introduction
+          </button>
+          <button
+            class="nav-link py-2 px-3 rounded-md hover:bg-slate-700 text-slate-300 font-medium text-sm sm:text-base"
+            data-target="tech"
+          >
+            Technologies
+          </button>
+          <button
+            class="nav-link py-2 px-3 rounded-md hover:bg-slate-700 text-slate-300 font-medium text-sm sm:text-base"
+            data-target="eco"
+          >
+            Ecosystem
+          </button>
+          <button
+            class="nav-link py-2 px-3 rounded-md hover:bg-slate-700 text-slate-300 font-medium text-sm sm:text-base"
+            data-target="concepts"
+          >
+            Enabling Concepts
+          </button>
+          <button
+            class="nav-link py-2 px-3 rounded-md hover:bg-slate-700 text-slate-300 font-medium text-sm sm:text-base"
+            data-target="future"
+          >
+            Future Implications
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8 max-w-7xl">
+      <section id="intro" class="section">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold text-white mb-4">
+            Connecting Minds and Machines
+          </h2>
+          <p class="text-lg text-slate-300 mb-6">
+            This interactive report explores the rapidly advancing field of
+            Brain-Computer Interfaces (BCIs). A BCI is a direct communication
+            pathway between the brain's electrical activity and an external
+            device, most commonly a computer or robotic limb. This technology
+            sits at the intersection of neuroscience, robotics, and artificial
+            intelligence, holding profound implications for medicine, human
+            augmentation, and our very definition of humanity.
+          </p>
+          <div class="bg-slate-700 border-l-4 border-blue-500 p-6 rounded-r-lg">
+            <h3 class="text-xl font-semibold text-blue-300 mb-2">
+              The Biodigital Convergence
+            </h3>
+            <p class="text-blue-300">
+              We are entering an era of
+              <strong class="font-semibold">Biodigital Convergence</strong>,
+              where the lines between biological life and digital technology are
+              blurring. BCIs are a prime example of this trend, which also
+              includes fields like genetic engineering and advanced prosthetics.
+              As we move towards a "post-humanist" future, these technologies
+              raise critical questions about identity, control, and what it
+              means to be human in a world shared with increasingly intelligent
+              machines.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tech" class="section">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold text-white mb-4">
+            How BCIs Work: Methods & Measurement
+          </h2>
+          <p class="text-lg text-slate-300 mb-6">
+            BCIs function by detecting and interpreting brain signals. The
+            primary distinction is between invasive methods, which require
+            surgery, and non-invasive methods, which read signals from outside
+            the skull. Each approach has significant trade-offs in terms of
+            signal quality, risk, and practicality. Explore the two main
+            categories below.
+          </p>
+
+          <div class="flex justify-center space-x-4 mb-6">
+            <button
+              class="tech-button py-2 px-6 rounded-full font-semibold text-slate-300 bg-slate-700 hover:bg-slate-600"
+              data-type="noninvasive"
+            >
+              Non-Invasive
+            </button>
+            <button
+              class="tech-button py-2 px-6 rounded-full font-semibold text-slate-300 bg-slate-700 hover:bg-slate-600"
+              data-type="invasive"
+            >
+              Invasive
+            </button>
+          </div>
+
+          <div
+            id="tech-content"
+            class="mb-8 p-4 bg-slate-900 rounded-lg min-h-[200px]"
+          ></div>
+
+          <h3 class="text-2xl font-semibold text-white mb-4 text-center">
+            Invasive vs. Non-Invasive Trade-Offs
+          </h3>
+          <div class="chart-container">
+            <canvas id="techChart"></canvas>
+          </div>
+
+          <hr class="my-8 border-slate-700" />
+
+          <h3 class="text-2xl font-semibold text-white mb-4">
+            Common Measurement Techniques
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-slate-700 p-5 rounded-lg border border-slate-600">
+              <h4 class="text-xl font-semibold text-blue-400 mb-2">
+                EEG (Electroencephalography)
+              </h4>
+              <p class="text-slate-400">
+                The most common non-invasive method. Measures electrical
+                activity via electrodes placed on the scalp. It's relatively
+                cheap and portable but suffers from low signal resolution due to
+                distortion by the skull.
+              </p>
+            </div>
+            <div class="bg-slate-700 p-5 rounded-lg border border-slate-600">
+              <h4 class="text-xl font-semibold text-blue-400 mb-2">
+                MEG (Magnetoencephalography)
+              </h4>
+              <p class="text-slate-400">
+                A non-invasive method that measures the tiny magnetic fields
+                produced by brain activity. It offers better spatial resolution
+                than EEG but requires large, expensive, and non-portable
+                machinery.
+              </p>
+            </div>
+            <div class="bg-slate-700 p-5 rounded-lg border border-slate-600">
+              <h4 class="text-xl font-semibold text-blue-400 mb-2">
+                fMRI (Functional MRI)
+              </h4>
+              <p class="text-slate-400">
+                Measures brain activity by detecting changes in blood flow
+                (hemodynamic response). Provides excellent spatial resolution
+                but is non-portable, expensive, and has a poor temporal (time)
+                resolution.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="eco" class="section">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold text-white mb-4">
+            The BCI Ecosystem: Players & Focus
+          </h2>
+          <p class="text-lg text-slate-300 mb-6">
+            The BCI landscape is a dynamic mix of government research agencies,
+            well-funded startups, and established tech companies. Research is
+            often driven by government bodies like DARPA, while
+            commercialization is being pursued for medical, wellness, and future
+            augmentation markets. Click on a player from the list to see more
+            details.
+          </p>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 h-full">
+              <h3 class="text-xl font-semibold text-slate-100 mb-4">
+                Key Players
+              </h3>
+              <div id="player-list" class="space-y-2">
+                <div
+                  class="player-item p-4 rounded-lg hover:bg-slate-700 cursor-pointer border border-slate-600"
+                  data-player="darpa"
+                >
+                  <h4 class="font-semibold text-slate-100">DARPA</h4>
+                  <p class="text-sm text-slate-400">Research Agency</p>
+                </div>
+                <div
+                  class="player-item p-4 rounded-lg hover:bg-slate-700 cursor-pointer border border-slate-600"
+                  data-player="neuralink"
+                >
+                  <h4 class="font-semibold text-slate-100">Neuralink</h4>
+                  <p class="text-sm text-slate-400">Invasive BCI</p>
+                </div>
+                <div
+                  class="player-item p-4 rounded-lg hover:bg-slate-700 cursor-pointer border border-slate-600"
+                  data-player="battelle"
+                >
+                  <h4 class="font-semibold text-slate-100">Battelle</h4>
+                  <p class="text-sm text-slate-400">Research Contractor</p>
+                </div>
+                <div
+                  class="player-item p-4 rounded-lg hover:bg-slate-700 cursor-pointer border border-slate-600"
+                  data-player="neurable"
+                >
+                  <h4 class="font-semibold text-slate-100">
+                    Neurable (w/ NextMind)
+                  </h4>
+                  <p class="text-sm text-slate-400">Non-Invasive BCI</p>
+                </div>
+                <div
+                  class="player-item p-4 rounded-lg hover:bg-slate-700 cursor-pointer border border-slate-600"
+                  data-player="bitbrain"
+                >
+                  <h4 class="font-semibold text-slate-100">Bitbrain</h4>
+                  <p class="text-sm text-slate-400">Non-Invasive BCI</p>
+                </div>
+                <div
+                  class="player-item p-4 rounded-lg hover:bg-slate-700 cursor-pointer border border-slate-600"
+                  data-player="xai"
+                >
+                  <h4 class="font-semibold text-slate-100">xAI</h4>
+                  <p class="text-sm text-slate-400">Artificial Intelligence</p>
+                </div>
+              </div>
+            </div>
+            <div id="player-details-container" class="lg:col-span-2">
+              <div
+                id="player-details"
+                class="p-6 bg-slate-900 rounded-lg shadow-inner min-h-[300px] lg:sticky top-24 flex items-center justify-center"
+              >
+                <p class="text-slate-500 text-center">
+                  Click a player on the left to see details
+                </p>
+              </div>
+            </div>
+          </div>
+          <hr class="my-8 border-slate-700" />
+          <h3 class="text-2xl font-semibold text-white mb-4 text-center">
+            Estimated Market Focus
+          </h3>
+          <div class="chart-container">
+            <canvas id="ecoChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="concepts" class="section">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold text-white mb-4">
+            Enabling Technologies & Concepts
+          </h2>
+          <p class="text-lg text-slate-300 mb-6">
+            Modern BCIs do not exist in a vacuum. They rely on, and are related
+            to, several other cutting-edge fields. The ability to process vast
+            amounts of neural data requires advanced AI, while future concepts
+            imagine microscopic, networked sensors.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-slate-700 p-6 rounded-lg border border-slate-600 flex flex-col items-center text-center"
+            >
+              <div
+                class="w-24 h-24 rounded-full bg-blue-900 flex items-center justify-center mb-4"
+              >
+                <div
+                  class="w-16 h-16 rounded-full bg-blue-800 flex items-center justify-center"
+                >
+                  <div class="w-8 h-8 rounded-full bg-blue-700"></div>
+                </div>
+              </div>
+              <h4 class="text-xl font-semibold text-blue-400 mb-2">
+                Artificial Intelligence (AI)
+              </h4>
+              <p class="text-slate-400">
+                AI, specifically machine learning, is essential for decoding
+                complex brain signals. It learns to identify patterns in neural
+                data that correspond to specific thoughts, intentions, or motor
+                commands, translating them into digital instructions.
+              </p>
+            </div>
+            <div
+              class="bg-slate-700 p-6 rounded-lg border border-slate-600 flex flex-col items-center text-center"
+            >
+              <div
+                class="w-24 h-24 rounded-full bg-blue-900 flex items-center justify-center flex-wrap gap-1 p-4 mb-4"
+              >
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+              </div>
+              <h4 class="text-xl font-semibold text-blue-400 mb-2">
+                Smartdust & Dust Networks
+              </h4>
+              <p class="text-slate-400">
+                A hypothetical concept of a vast network of microscopic sensors
+                ("motes") that could detect light, sound, or other data. In a
+                neuro-tech context, "neural dust" is a concept for a minimally
+                invasive BCI using tiny, free-floating sensors inside the brain.
+              </p>
+            </div>
+            <div
+              class="bg-slate-700 p-6 rounded-lg border border-slate-600 flex flex-col items-center text-center"
+            >
+              <div
+                class="w-24 h-24 rounded-full bg-blue-900 flex flex-col items-center justify-center space-y-1 overflow-hidden mb-4"
+              >
+                <div class="w-full h-1 bg-blue-500 animate-pulse"></div>
+                <div
+                  class="w-full h-1 bg-blue-500 animate-pulse"
+                  style="animation-delay: 0.2s"
+                ></div>
+                <div
+                  class="w-full h-1 bg-blue-500 animate-pulse"
+                  style="animation-delay: 0.4s"
+                ></div>
+                <div
+                  class="w-full h-1 bg-blue-500 animate-pulse"
+                  style="animation-delay: 0.6s"
+                ></div>
+              </div>
+              <h4 class="text-xl font-semibold text-blue-400 mb-2">
+                Terahertz Radiation
+              </h4>
+              <p class="text-slate-400">
+                A band of the electromagnetic spectrum between microwaves and
+                infrared light. Its potential application in BCI relates to
+                high-bandwidth, wireless communication, possibly for powering
+                and communicating with microscopic implants or sensors.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="future" class="section">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold text-white mb-4">
+            Future Implications: Post-Humanism & Cyborgs
+          </h2>
+          <p class="text-lg text-slate-300 mb-6">
+            Beyond the immediate medical applications for paralysis or
+            neurological disorders, BCI technology opens a philosophical
+            Pandora's box. The integration of digital technology directly with
+            the human brain is a foundational step toward what is known as
+            "post-humanism" or "transhumanism."
+          </p>
+          <blockquote
+            class="border-l-4 border-blue-500 bg-slate-700 p-6 rounded-r-lg mb-6"
+          >
+            <p class="text-xl italic text-blue-300 leading-relaxed">
+              "The biodigital convergence challenges the very idea of what is
+              'natural' or 'human'. When a person can control a machine with
+              their mind, or when digital information can be fed directly into
+              their consciousness, the boundary between the self and the
+              external world begins to dissolve."
+            </p>
+          </blockquote>
+          <h3 class="text-2xl font-semibold text-slate-100 mb-4">
+            From Restoration to Augmentation
+          </h3>
+          <p class="text-slate-300 mb-4">
+            The initial, widely accepted goal of BCI is
+            <strong class="font-semibold">restoration</strong>—giving back lost
+            function. However, the same technology could be used for
+            <strong class="font-semibold">augmentation</strong>, or "human
+            enhancement." This could range from enhancing memory or calculation
+            abilities to enabling mind-to-mind communication or interfacing
+            directly with a future AI.
+          </p>
+          <p class="text-slate-300 mb-4">
+            This path leads to the concept of the
+            <strong class="font-semibold">cyborg</strong> (cybernetic organism),
+            not just as a science fiction trope, but as a potential reality.
+            Companies like Neuralink explicitly state their long-term goal is to
+            create a "symbiosis" with artificial intelligence, partly as a way
+            to ensure humanity remains relevant in an AI-dominated future. As
+            this technology matures, society will face profound ethical, social,
+            and economic questions.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="text-center py-6 mt-8 border-t border-slate-700">
+      <p class="text-sm text-slate-500">
+        This interactive report was generated to synthesize and explore the
+        topic of BCIs.
+      </p>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const techData = {
+          invasive: {
+            title: "Invasive BCI",
+            desc: "Invasive BCIs are implanted directly into the brain, either on the surface (ECoG) or within the grey matter (microelectrode arrays). This proximity allows for the highest resolution signals.",
+            pros: "High signal-to-noise ratio, precise neural signal detection, high bandwidth.",
+            cons: "Requires neurosurgery, high risk of infection and complications, potential for tissue damage, signal degrades over time due to scar tissue.",
+          },
+          noninvasive: {
+            title: "Non-Invasive BCI",
+            desc: "Non-Invasive BCIs measure brain activity from outside the skull. Common methods include Electroencephalography (EEG), Magnetoencephalography (MEG), and functional Magnetic Resonance Imaging (fMRI).",
+            pros: "Safe, no surgery required, relatively low cost (especially EEG), easy to use and portable (EEG).",
+            cons: "Lower signal resolution (skull distorts signals), susceptible to noise, much lower bandwidth, fMRI/MEG are not portable.",
+          },
+        };
+
+        const playerData = {
+          neuralink: {
+            name: "Neuralink",
+            type: "Invasive BCI",
+            summary:
+              "Founded by Elon Musk, Neuralink is developing an ultra-high bandwidth invasive BCI using flexible 'threads' implanted by a surgical robot. The initial goal is to help people with paralysis, with long-term ambitions of human-AI symbiosis.",
+          },
+          darpa: {
+            name: "DARPA",
+            type: "Research Agency",
+            summary:
+              "The Defense Advanced Research Projects Agency (DARPA) is a key funder of advanced BCI research. Its N3 program (Next-Generation Nonsurgical Neurotechnology) aims to develop high-performance, non-surgical bi-directional BCIs, pushing the boundaries of what's possible without surgery.",
+          },
+          battelle: {
+            name: "Battelle",
+            type: "Research Contractor",
+            summary:
+              "A non-profit applied science and technology organization. Their neuro-team advanced in DARPA's N3 program by developing a minimally invasive 'injectable' BCI system called BrainSTORMS, which uses self-assembling nanoparticles to create a bi-directional interface.",
+          },
+          neurable: {
+            name: "Neurable (w/ NextMind)",
+            type: "Non-Invasive BCI",
+            summary:
+              "Neurable develops non-invasive BCI technology, notably acquiring NextMind, a French company that made a consumer-focused, dry-EEG BCI headband. They aim to create 'everyday' brain-computer interfaces by integrating their tech into devices like headphones for control and wellness applications.",
+          },
+          bitbrain: {
+            name: "Bitbrain",
+            type: "Non-Invasive BCI",
+            summary:
+              "A Spanish company specializing in high-fidelity, dry-EEG (no conductive gel) systems for research and practical applications. They focus on usability and creating reliable hardware for real-world neuroscience and BCI development.",
+          },
+          xai: {
+            name: "xAI",
+            type: "Artificial Intelligence",
+            summary:
+              "An AI company founded by Elon Musk, separate from his other ventures but philosophically linked to the BCI mission. Its stated goal is to 'understand the true nature of the universe,' which requires processing vast, complex datasets—a capability essential for interpreting high-bandwidth brain data from advanced BCIs.",
+          },
+        };
+
+        function formatLabel(str, maxwidth) {
+          if (typeof str !== "string") {
+            return str;
+          }
+          let sections = [];
+          let words = str.split(" ");
+          let temp = "";
+          words.forEach((item, index) => {
+            if (temp.length > 0) {
+              let concat = temp + " " + item;
+              if (concat.length > maxwidth) {
+                sections.push(temp);
+                temp = "";
+              } else {
+                temp = concat;
+                return;
+              }
+            }
+            if (item.length > maxwidth) {
+              sections.push(item.substring(0, maxwidth));
+              item = item.substring(maxwidth);
+            }
+            temp = item;
+          });
+          if (temp.length > 0) {
+            sections.push(temp);
+          }
+          return sections;
+        }
+
+        const tooltipConfig = {
+          enabled: true,
+          mode: "index",
+          intersect: false,
+          backgroundColor: "rgba(248, 250, 252, 0.9)",
+          titleFont: { size: 16, weight: "bold" },
+          bodyFont: { size: 14 },
+          padding: 12,
+          cornerRadius: 6,
+          displayColors: true,
+          boxPadding: 4,
+          titleColor: "#1e293b",
+          bodyColor: "#1e293b",
+        };
+
+        const navLinks = document.querySelectorAll(".nav-link");
+        const sections = document.querySelectorAll(".section");
+        const activeLinkClass = "active-link";
+
+        navLinks.forEach((link) => {
+          link.addEventListener("click", () => {
+            const targetId = link.dataset.target;
+
+            sections.forEach((section) => {
+              section.classList.toggle("active", section.id === targetId);
+            });
+
+            navLinks.forEach((navLink) => {
+              navLink.classList.remove(activeLinkClass);
+            });
+            link.classList.add(activeLinkClass);
+          });
+        });
+
+        document.querySelector('.nav-link[data-target="intro"]').click();
+
+        const techButtons = document.querySelectorAll(".tech-button");
+        const techContentEl = document.getElementById("tech-content");
+        const activeTechClass = "active-tech";
+
+        techButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const type = button.dataset.type;
+            const data = techData[type];
+            techContentEl.innerHTML = `
+                        <h3 class="text-2xl font-semibold text-blue-400 mb-2">${data.title}</h3>
+                        <p class="mb-4 text-slate-300">${data.desc}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-green-900 bg-opacity-50 p-4 rounded-lg border border-green-700">
+                                <h4 class="font-bold text-green-300">Pros</h4>
+                                <p class="text-green-400">${data.pros}</p>
+                            </div>
+                            <div class="bg-red-900 bg-opacity-50 p-4 rounded-lg border border-red-700">
+                                <h4 class="font-bold text-red-300">Cons</h4>
+                                <p class="text-red-400">${data.cons}</p>
+                            </div>
+                        </div>
+                    `;
+
+            techButtons.forEach((btn) => btn.classList.remove(activeTechClass));
+            button.classList.add(activeTechClass);
+          });
+        });
+        document.querySelector('.tech-button[data-type="noninvasive"]').click();
+
+        const playerItems = document.querySelectorAll(".player-item");
+        const playerDetailsEl = document.getElementById("player-details");
+        const activePlayerClass = "active-player";
+
+        playerItems.forEach((item) => {
+          item.addEventListener("click", () => {
+            const playerId = item.dataset.player;
+            const data = playerData[playerId];
+            playerDetailsEl.innerHTML = `
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold text-blue-400 mb-2">${data.name}</h3>
+                            <span class="inline-block bg-blue-900 text-blue-300 text-sm font-medium px-3 py-1 rounded-full mb-4">${data.type}</span>
+                            <p class="text-slate-300 leading-relaxed">${data.summary}</p>
+                        </div>
+                    `;
+
+            playerItems.forEach((i) => i.classList.remove(activePlayerClass));
+            item.classList.add(activePlayerClass);
+          });
+        });
+
+        function renderTechChart() {
+          const ctx = document.getElementById("techChart").getContext("2d");
+          if (window.techChartInstance) {
+            window.techChartInstance.destroy();
+          }
+          window.techChartInstance = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: ["Signal Resolution", "Practicality (1/Risk)"],
+              datasets: [
+                {
+                  label: "Invasive BCI",
+                  data: [90, 20],
+                  backgroundColor: "rgba(239, 68, 68, 0.7)",
+                  borderColor: "rgba(239, 68, 68, 1)",
+                  borderWidth: 1,
+                },
+                {
+                  label: "Non-Invasive BCI",
+                  data: [30, 80],
+                  backgroundColor: "rgba(96, 165, 250, 0.7)",
+                  borderColor: "rgba(96, 165, 250, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  ticks: { color: "#94a3b8" },
+                  grid: { color: "#334155" },
+                },
+                x: {
+                  ticks: { color: "#94a3b8" },
+                  grid: { display: false },
+                },
+              },
+              plugins: {
+                tooltip: tooltipConfig,
+                legend: {
+                  labels: { color: "#94a3b8" },
+                },
+              },
+            },
+          });
+        }
+
+        function renderEcoChart() {
+          const ctx = document.getElementById("ecoChart").getContext("2d");
+          if (window.ecoChartInstance) {
+            window.ecoChartInstance.destroy();
+          }
+          window.ecoChartInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: [
+                "Medical/Restorative",
+                "Consumer/Wellness",
+                "Government/Research",
+              ],
+              datasets: [
+                {
+                  label: "Ecosystem Focus",
+                  data: [40, 25, 35],
+                  backgroundColor: [
+                    "rgba(96, 165, 250, 0.8)",
+                    "rgba(52, 211, 153, 0.8)",
+                    "rgba(156, 163, 175, 0.8)",
+                  ],
+                  borderColor: "#1e293b",
+                  borderWidth: 3,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                tooltip: tooltipConfig,
+                legend: {
+                  position: "bottom",
+                  labels: { color: "#94a3b8" },
+                },
+              },
+            },
+          });
+        }
+
+        renderTechChart();
+        renderEcoChart();
+      });
+    </script>
+  </body>
+</html>
